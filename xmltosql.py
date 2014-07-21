@@ -2,9 +2,21 @@ import psycopg2 as sql
 import xml.etree.ElementTree as ET
 import re, sys
 
+
+def formatDate(date):
+	#Formats an input date in format ex "20140716_123133"
+	year = date[:4]
+	month = date[4:6]
+	day = date[6:8]
+
+	hour = date[9:11]
+	minute = date[11:13]
+	second = date[13:15]
+
+	return ("%s/%s/%s %s:%s.%s" % (day, month, year, hour, minute, second))
 class XMLParser():
 
-	def __init__(self, testResults="../nosetests.xml", dbname="results", dbuser='postgres', password='ender'):
+	def __init__(self, testResults="nosetests.xml", dbname="results", dbuser='postgres', password='ender'):
 
 		self.conn = sql.connect("dbname=%s user=%s password=%s" % (dbname, dbuser, password))
 		self.cursor = self.conn.cursor()
@@ -57,7 +69,13 @@ class XMLParser():
 			date = child.attrib['datestamp']
 			dateString = re.sub(' ', '_', re.sub('[-:]', '', date))
 
+
 			xml_path = name + "_" + dateString + '.xml'
+			xmlName = name
+
+			if 'test_enter_modes' in name:
+				xmlName = 'test_enter_modes'
+
 			xml_file = open(xml_path, 'w+')
 			xml_name = ET.Element(name, {"name" : name})
 
@@ -102,9 +120,9 @@ class XMLParser():
 				VALUES (%(datestamp)s, %(run_num)s, %(run_time)s, %(result)s, 
 					%(test_case_id)s, %(project_id)s, %(sha_list)s, %(xml_path)s);''',
 				{
-				'datestamp':dateString,
+				'datestamp': formatDate(dateString),
 				'run_num':run_num,
-				'run_time':child.attrib['time'],
+				'run_time':float(child.attrib['time']),
 				'result':child.attrib['status'],
 				'test_case_id':caseID,
 				'project_id':1,
