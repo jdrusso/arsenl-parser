@@ -42,6 +42,11 @@ class XMLParser():
 
 		for child in self.xmlRoot:
 
+			if 'teardown' in child.attrib['name']:
+				continue
+			if 'setup' in child.attrib['name']:
+				continue
+
 			self.cursor.execute('SELECT MAX(test_result_id) FROM test_result;')
 			try:
 				id_num = int(self.cursor.fetchone()[0] + 1)
