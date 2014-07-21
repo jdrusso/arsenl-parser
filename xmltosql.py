@@ -16,7 +16,7 @@ def formatDate(date):
 	return ("%s/%s/%s %s:%s.%s" % (day, month, year, hour, minute, second))
 class XMLParser():
 
-	def __init__(self, testResults="nosetests.xml", dbname="results", dbuser='postgres', password='ender'):
+	def __init__(self, testResults="../nosetests.xml", dbname="results", dbuser='postgres', password='ender'):
 
 		self.conn = sql.connect("dbname=%s user=%s password=%s" % (dbname, dbuser, password))
 		self.cursor = self.conn.cursor()
