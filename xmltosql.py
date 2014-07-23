@@ -1,6 +1,6 @@
 import psycopg2 as sql
 import xml.etree.ElementTree as ET
-import re, sys
+import re, sys, os
 
 
 def formatDate(date):
@@ -16,7 +16,7 @@ def formatDate(date):
 	return ("%s/%s/%s %s:%s.%s" % (day, month, year, hour, minute, second))
 class XMLParser():
 
-	def __init__(self, testResults="../nosetests.xml", dbname="results", dbuser='postgres', password='ender'):
+	def __init__(self, dbuser, password, testResults="../nosetests.xml", dbname="results"):
 
 		self.conn = sql.connect("dbname=%s user=%s password=%s" % (dbname, dbuser, password))
 		self.cursor = self.conn.cursor()
@@ -148,10 +148,27 @@ def main(argv):
 	except IndexError:
 		path = None
 	
+	try:
+		CURRENT_DIR = os.path.dirname(__file__)
+		login_path = os.path.join(CURRENT_DIR, 'LOGIN')
+		creds = open(login_path)
+		username = creds.readline().rstrip()[5:]
+		password = creds.readline().rstrip()[5:]
+
+		if username == '[username]' or password == '[password]':
+			print('Please enter your DB username and password in LOGIN, in the same folder as this script.')
+			return
+
+	except Exception:
+		print('Could not read credentials')
+		return -1
+
 	if not path == None:
-		parser = XMLParser(path)
+		parser = XMLParser(dbuser=username, password=password, testResults=path)
 	else: 
-		parser = XMLParser()
+		parser = XMLParser(dbuser=username, password=password)
+
+
 	parser.parse()
 	parser.finalize()
 
