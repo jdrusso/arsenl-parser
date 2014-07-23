@@ -160,7 +160,7 @@ def main(argv):
 			return
 
 	except Exception:
-		print('Could not read credentials')
+		print('Could not read credentials. See LOGIN.example')
 		return -1
 
 	if not path == None:
