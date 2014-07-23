@@ -70,6 +70,7 @@ class XMLParser():
 			testType = re.split('_', child.attrib['classname'])[0]
 			time = child.attrib['time']
 
+			SHA_list = child.attrib['sha_list']
 
 			date = child.attrib['datestamp']
 			dateString = re.sub(' ', '_', re.sub('[-:]', '', date))
@@ -131,7 +132,7 @@ class XMLParser():
 				'result':child.attrib['status'],
 				'test_case_id':caseID,
 				'project_id':1,
-				'sha_list':"No sha list yet",
+				'sha_list':SHA_list,
 				'xml_path':xml_path,
 				})
 
