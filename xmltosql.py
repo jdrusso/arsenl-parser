@@ -40,6 +40,8 @@ class XMLParser():
 
 		print("Run_num is %d" % run_num)
 
+		mode_num = 0
+
 		for child in self.xmlRoot:
 
 			if 'teardown' in child.attrib['name']:
@@ -75,15 +77,16 @@ class XMLParser():
 			date = child.attrib['datestamp']
 			dateString = re.sub(' ', '_', re.sub('[-:]', '', date))
 
+			xmlName = name
+			if 'test_enter_modes' in name:
+				xmlName = 'test_enter_modes_' + str(mode_num)
+				mode_num += 1
+				name = name[:-2] + ')'
 
 			xml_path = name + "_" + dateString + '.xml'
-			xmlName = name
-
-			if 'test_enter_modes' in name:
-				xmlName = 'test_enter_modes'
 
 			xml_file = open(xml_path, 'w+')
-			xml_name = ET.Element(name, {"name" : name})
+			xml_name = ET.Element(xmlName, {"name" : name})
 
 			try:
 				mavout = ET.SubElement(xml_name, 'MAVProxy-out')
