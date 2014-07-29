@@ -153,7 +153,7 @@ def main(argv):
 	parser.add_argument('--path',
                             nargs='?',
                             type=str,
-                            default='../nosetests.xml',
+                            default='../aplog.xml',
                             help='path to nosetests.xml')
 	parser.add_argument('--buildNum',
                             nargs='?',
