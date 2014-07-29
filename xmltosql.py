@@ -1,6 +1,6 @@
 import psycopg2 as sql
 import xml.etree.ElementTree as ET
-import re, sys, os
+import re, sys, os, argparse
 
 
 def formatDate(date):
@@ -16,7 +16,7 @@ def formatDate(date):
 	return ("%s/%s/%s %s:%s.%s" % (day, month, year, hour, minute, second))
 class XMLParser():
 
-	def __init__(self, dbuser, password, testResults="../nosetests.xml", dbname="results"):
+	def __init__(self, dbuser, password, buildNum, testResults="../aplog.xml", dbname="results"):
 
 		self.conn = sql.connect("dbname=%s user=%s password=%s" % (dbname, dbuser, password))
 		self.cursor = self.conn.cursor()
@@ -24,6 +24,8 @@ class XMLParser():
 
 		self.xmlTree = ET.parse(testResults)
 		self.xmlRoot = self.xmlTree.getroot()
+
+		self.buildNum = buildNum
 
 		self.conn.commit()
 
@@ -130,7 +132,7 @@ class XMLParser():
 					%(test_case_id)s, %(project_id)s, %(sha_list)s, %(xml_path)s);''',
 				{
 				'datestamp': formatDate(dateString),
-				'run_num':run_num,
+				'run_num':self.buildNum,
 				'run_time':float(child.attrib['time']),
 				'result':child.attrib['status'],
 				'test_case_id':caseID,
@@ -146,10 +148,21 @@ class XMLParser():
 
 def main(argv):
 
-	try:
-		path = sys.argv[1]
-	except IndexError:
-		path = None
+	parser = argparse.ArgumentParser(description="Parses a nosetests result file into a SQL db.")
+
+	parser.add_argument('--path',
+                            nargs='?',
+                            type=str,
+                            default='../nosetests.xml',
+                            help='path to nosetests.xml')
+	parser.add_argument('--buildNum',
+                            nargs='?',
+                            type=int,
+                            default='-1',
+                            help='build number',
+                            required=True)
+
+	args = parser.parse_args()
 	
 	try:
 		CURRENT_DIR = os.path.dirname(__file__)
@@ -166,10 +179,8 @@ def main(argv):
 		print('Could not read credentials. See LOGIN.example')
 		return -1
 
-	if not path == None:
-		parser = XMLParser(dbuser=username, password=password, testResults=path)
-	else: 
-		parser = XMLParser(dbuser=username, password=password)
+	parser = XMLParser(dbuser=username, password=password,
+		buildNum=args.buildNum, testResults=args.path)
 
 
 	parser.parse()
