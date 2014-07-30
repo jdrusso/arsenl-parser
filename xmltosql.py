@@ -12,8 +12,10 @@ def formatDate(date):
 	hour = date[9:11]
 	minute = date[11:13]
 	second = date[13:15]
+	millis = date[16:19]
 
-	return ("%s/%s/%s %s:%s.%s" % (day, month, year, hour, minute, second))
+	return ("%s-%s-%s %s:%s:%s.%s" % (month, day, year, hour, minute, second, millis))
+
 class XMLParser():
 
 	def __init__(self, dbuser, password, buildNum, testResults="../aplog.xml", dbname="results"):
@@ -50,24 +52,6 @@ class XMLParser():
 				continue
 			if 'setup' in child.attrib['name']:
 				continue
-
-			self.cursor.execute('SELECT MAX(test_result_id) FROM test_result;')
-			try:
-				id_num = int(self.cursor.fetchone()[0] + 1)
-			except TypeError:
-				id_num = 0
-
-			self.cursor.execute('SELECT MAX(test_result_id) FROM test_result;')
-			try:
-				id_num = int(self.cursor.fetchone()[0] + 1)
-			except TypeError:
-				id_num = 0
-
-			self.cursor.execute('SELECT MAX(test_result_id) FROM test_result;')
-			try:
-				id_num = int(self.cursor.fetchone()[0] + 1)
-			except TypeError:
-				id_num = 0
 
 			name = child.attrib['name']
 			print("Parsing child %s" % name)
@@ -126,6 +110,8 @@ class XMLParser():
 			except Exception as e:
 				print("Exception in test_case_id lookup: %s" % e)
 				caseID = -1
+
+			print "Datestring is ", formatDate(dateString)
 
 			self.cursor.execute('''INSERT INTO test_result 
 				VALUES (%(datestamp)s, %(run_num)s, %(run_time)s, %(result)s, 
