@@ -18,7 +18,7 @@ def formatDate(date):
 
 class XMLParser():
 
-	def __init__(self, dbuser, password, buildNum, testResults="../aplog.xml", dbname="results"):
+	def __init__(self, dbuser, password, projectName, buildNum, testResults="../aplog.xml", dbname="results", testingSHA=''):
 
 		self.conn = sql.connect("dbname=%s user=%s password=%s" % (dbname, dbuser, password))
 		self.cursor = self.conn.cursor()
@@ -28,6 +28,11 @@ class XMLParser():
 		self.xmlRoot = self.xmlTree.getroot()
 
 		self.buildNum = buildNum
+
+		self.testingSHA = testingSHA
+
+		self.cursor.execute("SELECT project_id FROM project WHERE name = '%s';" % projectName)
+		self.projectID = cursor.fetchone()[0]
 
 		self.conn.commit()
 
@@ -59,6 +64,8 @@ class XMLParser():
 			time = child.attrib['time']
 
 			SHA_list = child.attrib['sha_list']
+			if not self.testingSHA == '':
+				SHA_list = SHA_list[:-2] + ", '" + self.testingSHA + "']"
 
 			date = child.attrib['datestamp']
 			dateString = re.sub(' ', '_', re.sub('[-:]', '', date))
@@ -70,6 +77,8 @@ class XMLParser():
 				name = name[:-2] + ')'
 
 			xml_path = name + "_" + dateString + '.xml'
+
+			print xml_path
 
 			xml_file = open(xml_path, 'w+')
 			xml_name = ET.Element(xmlName, {"name" : name})
@@ -122,7 +131,7 @@ class XMLParser():
 				'run_time':float(child.attrib['time']),
 				'result':child.attrib['status'],
 				'test_case_id':caseID,
-				'project_id':1,
+				'project_id':self.projectID,
 				'sha_list':SHA_list,
 				'xml_path':xml_path,
 				})
@@ -147,6 +156,17 @@ def main(argv):
                             default='-1',
                             help='build number',
                             required=True)
+	parser.add_argument('--project',
+                            nargs='?',
+                            type=str,
+                            default='ACS',
+                            help='name of project')
+	parser.add_argument('--SHA',
+                            nargs='?',
+                            type=str,
+                            default='',
+                            help='optional additional SHA',
+                            required=False)
 
 	args = parser.parse_args()
 	
@@ -165,9 +185,13 @@ def main(argv):
 		print('Could not read credentials. See LOGIN.example')
 		return -1
 
-	parser = XMLParser(dbuser=username, password=password,
-		buildNum=args.buildNum, testResults=args.path)
+	if args.SHA == '':
+		parser = XMLParser(dbuser=username, password=password,
+			projectName=args.project, buildNum=args.buildNum, testResults=args.path)
 
+	else:
+		parser = XMLParser(dbuser=username, password=password,
+			projectName=args.project, buildNum=args.buildNum, testResults=args.path, testingSHA=args.SHA)
 
 	parser.parse()
 	parser.finalize()
