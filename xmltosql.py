@@ -32,7 +32,7 @@ class XMLParser():
 		self.testingSHA = testingSHA
 
 		self.cursor.execute("SELECT project_id FROM project WHERE name = '%s';" % projectName)
-		self.projectID = cursor.fetchone()[0]
+		self.projectID = self.cursor.fetchone()[0]
 
 		self.conn.commit()
 
