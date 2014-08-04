@@ -29,8 +29,6 @@ class XMLParser():
 
 		self.buildNum = buildNum
 
-		self.testingSHA = testingSHA
-
 		self.cursor.execute("SELECT project_id FROM project WHERE name = '%s';" % projectName)
 		self.projectID = self.cursor.fetchone()[0]
 
@@ -64,8 +62,6 @@ class XMLParser():
 			time = child.attrib['time']
 
 			SHA_list = child.attrib['sha_list']
-			if not self.testingSHA == '':
-				SHA_list = SHA_list[:-2] + ", '" + self.testingSHA + "']"
 
 			date = child.attrib['datestamp']
 			dateString = re.sub(' ', '_', re.sub('[-:]', '', date))
@@ -180,7 +176,7 @@ def main(argv):
 		return -1
 
 	parser = XMLParser(dbuser=username, password=password,
-		projectName=args.project, buildNum=args.buildNum, testResults=args.path, testingSHA=args.SHA)
+		projectName=args.project, buildNum=args.buildNum, testResults=args.path)
 
 	parser.parse()
 	parser.finalize()
