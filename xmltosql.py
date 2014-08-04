@@ -18,7 +18,7 @@ def formatDate(date):
 
 class XMLParser():
 
-	def __init__(self, dbuser, password, projectName, buildNum, testResults="../aplog.xml", dbname="results", testingSHA=''):
+	def __init__(self, dbuser, password, projectName, buildNum, testResults="../aplog.xml", dbname="results"):
 
 		self.conn = sql.connect("dbname=%s user=%s password=%s" % (dbname, dbuser, password))
 		self.cursor = self.conn.cursor()
@@ -161,12 +161,6 @@ def main(argv):
                             type=str,
                             default='ACS',
                             help='name of project')
-	parser.add_argument('--SHA',
-                            nargs='?',
-                            type=str,
-                            default='',
-                            help='optional additional SHA',
-                            required=False)
 
 	args = parser.parse_args()
 	
@@ -185,13 +179,8 @@ def main(argv):
 		print('Could not read credentials. See LOGIN.example')
 		return -1
 
-	if args.SHA == '':
-		parser = XMLParser(dbuser=username, password=password,
-			projectName=args.project, buildNum=args.buildNum, testResults=args.path)
-
-	else:
-		parser = XMLParser(dbuser=username, password=password,
-			projectName=args.project, buildNum=args.buildNum, testResults=args.path, testingSHA=args.SHA)
+	parser = XMLParser(dbuser=username, password=password,
+		projectName=args.project, buildNum=args.buildNum, testResults=args.path, testingSHA=args.SHA)
 
 	parser.parse()
 	parser.finalize()
