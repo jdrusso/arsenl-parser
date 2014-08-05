@@ -66,11 +66,12 @@ class XMLParser():
 			date = child.attrib['datestamp']
 			dateString = re.sub(' ', '_', re.sub('[-:]', '', date))
 
+			if '(' in name:
+				testName, mode = re.findall(r'(\w+).*?(\w+)', name)[0]
+				
+				name = '%s_%s' % (testName, mode)
+			
 			xmlName = name
-			if 'test_enter_modes' in name:
-				xmlName = 'test_enter_modes_' + str(mode_num)
-				mode_num += 1
-				name = name[:-2] + ')'
 
 			xml_path = name + "_" + dateString + '.xml'
 
